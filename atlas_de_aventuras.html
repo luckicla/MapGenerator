@@ -1,0 +1,237 @@
+<!doctype html>
+<html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Atlas de Aventuras</title>
+<link href="https://fonts.googleapis.com/css2?family=IM+Fell+English:ital@0;1&display=swap" rel="stylesheet">
+<style>
+:root{--ink:#2d2a22;--paper:#f2e8cf;--panel:#efe4c8;--line:#cdbd97;--acc:#9a5b2e;--grn:#6d7f4f}
+*{box-sizing:border-box}html,body{height:100%;margin:0}
+body{font:14px/1.4 system-ui,sans-serif;background:var(--paper);color:var(--ink);display:flex;flex-direction:column}
+header{display:flex;align-items:center;gap:12px;padding:8px 16px;background:#2b2a22;color:#f2e8cf;border-bottom:3px solid #a8884b}
+h1{font:italic 24px 'IM Fell English',Georgia,serif;margin:0;white-space:nowrap}
+#mapName{flex:1;max-width:340px;background:#ffffff14;border:1px solid #ffffff30;color:#fff;border-radius:6px;padding:6px 10px;font:italic 16px 'IM Fell English',Georgia,serif}
+button{font:inherit;border:1px solid #bda877;background:#f8f0da;color:var(--ink);padding:7px 9px;border-radius:7px;cursor:pointer}
+button:hover{background:#efe0b8}button.on{background:#dfe6c8;border-color:var(--grn);box-shadow:inset 0 0 0 1px var(--grn)}
+button.big{background:var(--acc);color:#fff8e6;border-color:#7b4620;font-weight:600;width:100%;padding:11px;font-size:15px}button.big:hover{background:#85501f}
+main{flex:1;display:grid;grid-template-columns:290px 1fr 270px;min-height:0}
+aside{overflow:auto;padding:14px;background:var(--panel)}#L{border-right:1px solid var(--line)}#R{border-left:1px solid var(--line)}
+aside h3{font:600 11px system-ui;letter-spacing:.1em;text-transform:uppercase;color:#7a6a45;margin:18px 0 8px}aside h3:first-child{margin-top:0}
+.presets{display:grid;grid-template-columns:1fr 1fr;gap:6px}.presets button{text-align:left;padding:8px}
+.sl{display:grid;grid-template-columns:1fr 36px;gap:0 6px;margin:10px 0}.sl label{grid-column:1/-1;font-size:13px}.sl input{width:100%;accent-color:var(--grn)}.sl output{text-align:right;font-size:12px;color:#7a6a45}
+select,input[type=text],textarea{width:100%;font:inherit;padding:7px;border:1px solid #c8b98d;border-radius:6px;background:#fffaf0;color:var(--ink)}
+.row{display:flex;gap:6px;flex-wrap:wrap;margin:6px 0}.row>*{flex:1}.chk{display:flex;gap:6px;align-items:center;margin:6px 0;font-size:13px}
+details{margin-top:14px}summary{cursor:pointer;font-size:13px;color:#7a6a45}details label{display:block;font-size:12px;margin:8px 0 3px}
+#S{position:relative;display:flex;flex-direction:column;min-width:0}
+#bar{display:flex;flex-wrap:wrap;gap:5px;font-size:13px;align-items:center;padding:8px;background:#e6d9b6;border-bottom:1px solid var(--line)}
+#bar .sp{flex:1}#types,#brushW{display:none;padding:6px 8px;background:#efe3c0;border-bottom:1px solid var(--line);gap:6px;flex-wrap:wrap;align-items:center}
+#hint{padding:6px 12px;font-size:12.5px;background:#f7efd7;border-bottom:1px solid var(--line);color:#6b5d3b}
+#cw{flex:1;min-height:0;position:relative;background:#bfb185}canvas{width:100%;height:100%;display:block;touch-action:none}
+#toast{position:absolute;top:12px;left:50%;transform:translateX(-50%);background:#2b2a22;color:#fff6df;padding:8px 14px;border-radius:6px;opacity:0;pointer-events:none;transition:opacity .2s;font-size:13px}#toast.show{opacity:1}
+.card{background:#fff9ea;border:1px solid #d5c9a6;border-radius:8px;padding:12px;margin-bottom:12px}.card b.t{font:italic 19px 'IM Fell English',Georgia,serif;display:block}
+.pl{display:flex;gap:8px;align-items:center;width:100%;text-align:left;margin-bottom:4px;padding:5px 8px}.pl small{color:#8a7b55;display:block;font-size:11px}
+.hint2{font-size:12.5px;color:#6b5d3b}
+@media(max-width:1000px){body{height:auto}main{grid-template-columns:1fr}#S{height:80vh}#L,#R{border:0}}
+</style></head><body>
+<header><h1>✥ Atlas de Aventuras</h1><input id="mapName" value="Las Marcas de Eldoria" title="Nombre del mapa"><span style="flex:1"></span><button id="undo">↶ Deshacer</button></header>
+<main>
+<aside id="L">
+ <h3>1 · Elige un tipo de mundo</h3><div class="presets" id="presets"></div>
+ <h3>2 · Ajústalo a tu gusto</h3>
+ <div class="sl"><label for="land">Cuánta tierra hay</label><input id="land" type="range" min="15" max="90" value="55"><output></output></div>
+ <div class="sl"><label for="mount">Montañas</label><input id="mount" type="range" min="0" max="60" value="18"><output></output></div>
+ <div class="sl"><label for="forest">Bosques</label><input id="forest" type="range" min="0" max="80" value="40"><output></output></div>
+ <div class="sl"><label for="rivers">Ríos</label><input id="rivers" type="range" min="0" max="12" value="5"><output></output></div>
+ <div class="sl"><label for="civ">Ciudades y pueblos</label><input id="civ" type="range" min="0" max="10" value="5"><output></output></div>
+ <div class="sl"><label for="adv">Aventura (ruinas, monstruos, tesoros)</label><input id="adv" type="range" min="0" max="10" value="5"><output></output></div>
+ <button class="big" id="newWorld">🎲 Mundo nuevo</button>
+ <h3>3 · Aspecto</h3>
+ <select id="style"><option value="perg">Pergamino clásico</option><option value="cuento">Libro de cuentos</option><option value="sombrio">Fantasía sombría</option></select>
+ <div class="row"><select id="names"><option value="fantasia">Nombres: clásicos</option><option value="elfico">Élficos</option><option value="nordico">Nórdicos</option><option value="arabe">Desérticos</option><option value="celta">Celtas</option></select></div>
+ <label class="chk"><input type="checkbox" id="showNames" checked> Mostrar nombres</label>
+ <label class="chk"><input type="checkbox" id="showRoads" checked> Mostrar caminos</label>
+ <details><summary>Opciones avanzadas</summary>
+  <label>Semilla (misma semilla = mismo mundo)</label><input type="text" id="seed">
+  <label>Formato</label><select id="fmt"><option value="l">Apaisado</option><option value="p">Vertical</option></select>
+  <label>Tamaño del PNG</label><select id="res"><option value="1600">Normal (1600 px)</option><option value="2400" selected>Alto (2400 px)</option><option value="3200">Impresión (3200 px)</option></select>
+  <label class="chk"><input type="checkbox" id="showCompass" checked> Rosa de los vientos</label>
+ </details>
+ <h3>Guardar</h3>
+ <div class="row"><button id="png" class="on">⬇ PNG</button><button id="json">Guardar</button><button id="load">Abrir…</button></div>
+ <input type="file" id="file" accept=".json" hidden>
+</aside>
+<div id="S">
+ <div id="bar"></div>
+ <div id="brushW"><span>Tamaño del pincel</span><input type="range" id="brush" min="1" max="9" value="4" style="width:140px"></div>
+ <div id="types"></div>
+ <div id="hint"></div>
+ <div id="cw"><canvas id="cv"></canvas><div id="toast"></div></div>
+</div>
+<aside id="R"><div id="card"></div><h3>Lugares del mapa</h3><div id="list"></div></aside>
+</main>
+<script>
+(()=>{"use strict";
+const $=id=>document.getElementById(id),cv=$("cv"),CELL=10;
+let W=1600,H=1100,GW=160,GH=110,M={seed:1,hh:null,mo:null,mt:9,ft:9,places:[],rivers:[],roads:[]},shape="c",ground="grass",tool="move",ptype="town",sel=null,landCv=null,view={x:0,y:0,k:1},hist=[];
+const clamp=(v,a,b)=>Math.max(a,Math.min(b,v)),lerp=(a,b,t)=>a+(b-a)*t,pick=(r,a)=>a[Math.floor(r()*a.length)],ri=(r,a,b)=>a+Math.floor(r()*(b-a+1));
+function rng(s){let a=s>>>0;return()=>{a+=0x6D2B79F5;let t=a;t=Math.imul(t^t>>>15,t|1);t^=t+Math.imul(t^t>>>7,t|61);return((t^t>>>14)>>>0)/4294967296}}
+function H1(x,y,s){let n=Math.imul(x|0,374761393)+Math.imul(y|0,668265263)+Math.imul(s|0,1442695041);n=Math.imul(n^n>>>13,1274126177);return((n^n>>>16)>>>0)/4294967296}
+function vn(x,y,s){const xi=Math.floor(x),yi=Math.floor(y),xf=x-xi,yf=y-yi,u=xf*xf*(3-2*xf),v=yf*yf*(3-2*yf);return lerp(lerp(H1(xi,yi,s),H1(xi+1,yi,s),u),lerp(H1(xi,yi+1,s),H1(xi+1,yi+1,s),u),v)}
+function fbm(x,y,s){let a=.5,f=1,t=0,n=0;for(let i=0;i<5;i++){t+=a*vn(x*f,y*f,s+i*17);n+=a;a/=2;f*=2}return t/n}
+const quant=(arr,p)=>{const s=Float32Array.from(arr).sort();return s.length?s[clamp(Math.floor(p*(s.length-1)),0,s.length-1)]:9};
+function E(gx,gy,A){A=A||M.hh;gx=clamp(gx-.5,0,GW-1.001);gy=clamp(gy-.5,0,GH-1.001);const x=gx|0,y=gy|0,fx=gx-x,fy=gy-y,i=y*GW+x;return A[i]*(1-fx)*(1-fy)+A[i+1]*fx*(1-fy)+A[i+GW]*(1-fx)*fy+A[i+GW+1]*fx*fy}
+function toast(s){const e=$("toast");e.textContent=s;e.classList.add("show");clearTimeout(toast.t);toast.t=setTimeout(()=>e.classList.remove("show"),1700)}
+
+/* ---------- datos ---------- */
+const BIO={templado:{ic:"🌳",n:"Templado",v:{land:55,mount:18,forest:40,rivers:5,civ:5,adv:5},s:"c",g:"grass"},islas:{ic:"🏝",n:"Archipiélago",v:{land:34,mount:10,forest:35,rivers:2,civ:4,adv:5},s:"i",g:"grass"},montanas:{ic:"⛰",n:"Montañoso",v:{land:60,mount:42,forest:30,rivers:7,civ:3,adv:6},s:"c",g:"grass"},desierto:{ic:"🏜",n:"Desierto",v:{land:62,mount:14,forest:2,rivers:1,civ:3,adv:7},s:"c",g:"sand"},nieve:{ic:"❄",n:"Tierras nevadas",v:{land:58,mount:26,forest:35,rivers:4,civ:3,adv:5},s:"c",g:"snow"},jungla:{ic:"🌴",n:"Jungla",v:{land:58,mount:10,forest:78,rivers:9,civ:3,adv:7},s:"c",g:"jungle"},volcan:{ic:"🌋",n:"Volcánico",v:{land:48,mount:34,forest:6,rivers:2,civ:3,adv:8},s:"i",g:"ash"}};
+const GR={grass:{land:[207,208,150],sand:[233,219,166],forest:[148,170,108],rock:[176,170,150]},sand:{land:[232,208,152],sand:[242,227,178],forest:[190,186,120],rock:[194,168,128]},snow:{land:[240,240,230],sand:[226,231,232],forest:[188,205,196],rock:[202,204,210]},ash:{land:[158,147,130],sand:[186,171,146],forest:[118,120,96],rock:[108,99,98]},jungle:{land:[170,196,114],sand:[226,214,160],forest:[104,148,82],rock:[160,160,134]}};
+const STY={perg:{paper:"#f0e3c4",ink:"#3a3326",sea:[176,202,198],deep:[126,166,172],sat:1,br:1},cuento:{paper:"#f6ebd0",ink:"#33422f",sea:[146,206,210],deep:[96,170,192],sat:1.25,br:1.03},sombrio:{paper:"#d8cfba",ink:"#2c2a26",sea:[138,154,150],deep:[92,110,112],sat:.65,br:.9}};
+const NM={fantasia:[["Ael","Bel","Bran","Dun","Eld","Fal","Gal","Grim","Kael","Mor","Nor","Rav","Thal","Val"],["dor","fall","gard","haven","mere","moor","reach","spire","watch","wick","wyn","oria"]],elfico:[["Ael","Ari","Cele","Eli","Fael","Ithil","Loth","Mira","Nim","Syla","Tira","Vana"],["anor","ara","driel","loth","lume","riel","thalas","wen","wyn"]],nordico:[["Bjorn","Draug","Eik","Frost","Gald","Hrafn","Jarn","Kald","Runa","Skal","Storm","Ulf"],["berg","dal","fjord","gard","heim","holm","mark","vik","skar","fell"]],arabe:[["Akh","Amar","Az","Bah","Dar","Far","Jaz","Khar","Nad","Qas","Rah","Zul"],["abad","akh","al","esh","hara","im","ir","qad","sara"]],celta:[["Aver","Bran","Caer","Celyn","Dun","Eira","Glen","Llan","Morna","Pen","Rhos","Taran"],["bryn","combe","dun","mere","more","rath","wick","wen","wych","yr"]]};
+const TL={city:"Ciudad",town:"Pueblo",castle:"Castillo",ruin:"Ruinas",dungeon:"Mazmorra",dragon:"Guarida de monstruo",treasure:"Tesoro",landmark:"Lugar singular"},TE={city:"🏛",town:"🏘",castle:"🏰",ruin:"🏚",dungeon:"🕳",dragon:"🐉",treasure:"💰",landmark:"🗿"};
+const HK={s:["Alguien roba provisiones y el alcalde culpa a los forasteros.","Una familia noble oculta un pacto con una facción rival.","Los vecinos hablan de luces extrañas junto al cementerio.","Se busca escolta para una caravana por territorio peligroso.","Un posadero guarda un mapa que no sabe leer."],d:["Una cripta sellada: algo golpea desde dentro cada luna nueva.","Un culto usa estas galerías para sus rituales.","Trampas antiguas protegen una reliquia de la que nadie habla.","Goblins y kobolds se disputan la entrada."],g:["Una criatura ancestral duerme sobre un tesoro. Las huellas sugieren que no está sola.","Los pastores desaparecen cada vez que cae la niebla."],t:["Un cofre enterrado bajo una piedra marcada con un símbolo.","Una bolsa con monedas y una carta que compromete a un noble."],l:["Los viajeros dejan ofrendas aquí antes de seguir camino.","Un lugar donde los mapas no coinciden con el terreno."]};
+const hookFor=(t,r)=>pick(r,HK[{city:"s",town:"s",castle:"s",ruin:"d",dungeon:"d",dragon:"g",treasure:"t",landmark:"l"}[t]]);
+function nameFor(t,r){const w=NM[$("names").value]||NM.fantasia,b=pick(r,w[0])+pick(r,w[1]);return({ruin:"Ruinas de ",dungeon:pick(r,["Cripta de ","Cavernas de ","Mazmorra de "]),castle:pick(r,["Castillo de ","Fortaleza de "]),dragon:"Guarida de ",treasure:"Tesoro de ",landmark:pick(r,["Piedras de ","Faro de ","Roble de "])}[t]||"")+b}
+
+/* ---------- generación ---------- */
+function seedVal(){const v=$("seed").value.trim();if(!v)return 1;if(/^\d+$/.test(v))return+v;let h=2166136261;for(const c of v)h=Math.imul(h^c.charCodeAt(0),16777619);return h>>>0}
+function dims(){const p=$("fmt").value==="p";W=p?1100:1600;H=p?1600:1100;GW=W/CELL;GH=H/CELL}
+function gen(newSeed){snap();dims();if(newSeed||!$("seed").value)$("seed").value=Math.floor(Math.random()*900000+100000);
+ const seed=M.seed=seedVal(),land=+$("land").value/100,mount=+$("mount").value/100,forest=+$("forest").value/100,sx=GW/GH,isl=shape==="i",hh=new Float32Array(GW*GH),mo=new Float32Array(GW*GH);
+ for(let gy=0;gy<GH;gy++)for(let gx=0;gx<GW;gx++){const nx=(gx+.5)/GW,ny=(gy+.5)/GH,f=isl?2.4:1.5,base=fbm(nx*2.2*sx*f,ny*2.2*f,seed),d=Math.hypot((nx-.5)*2,(ny-.5)*2),mask=isl?1-Math.pow(d,1.5)*.8:1-Math.pow(d,2.3)*.95,ridge=1-Math.abs(vn(nx*5*sx,ny*5,seed+50)*2-1),i=gy*GW+gx;
+  hh[i]=base*.7+ridge*.18*(.4+mount*1.5)+mask*(isl?.22:.5);mo[i]=fbm(nx*4*sx+7,ny*4+7,seed+99)}
+ const sea=quant(hh,1-land);for(let gy=0;gy<GH;gy++)for(let gx=0;gx<GW;gx++){const i=gy*GW+gx,ed=Math.min(gx,gy,GW-1-gx,GH-1-gy);hh[i]-=sea;if(ed<6)hh[i]-=(1-ed/6)*.45}
+ const lv=[],mv=[];for(let i=0;i<hh.length;i++)if(hh[i]>0){lv.push(hh[i]);mv.push(mo[i])}
+ M.hh=hh;M.mo=mo;M.mt=mount<.005?9:quant(lv,1-mount);M.ft=forest<.005?9:quant(mv,1-forest);
+ M.places=[];sel=null;mkPlaces();mkRivers();mkRoads();render();side()}
+function nearWater(gx,gy,R){for(let y=-R;y<=R;y++)for(let x=-R;x<=R;x++)if(E(gx+x,gy+y)<=0)return true;return false}
+function spot(t,r){let best=null,bs=-9;const md={city:14,town:7,castle:10}[t]||4;
+ for(let k=0;k<70;k++){const gx=5+r()*(GW-10),gy=5+r()*(GH-10),e=E(gx,gy);if(e<.04||M.places.some(p=>Math.hypot(p.x/CELL-gx,p.y/CELL-gy)<md))continue;
+  const m=e>M.mt,fo=E(gx,gy,M.mo)>M.ft;let s=r()*.5;
+  if(t==="city"||t==="town")s+=(nearWater(gx,gy,4)?1:0)+(m?-2:0)+(fo?-.5:0);else if(t==="dragon")s+=m?2:e>M.mt*.6?1:0;else if(t==="ruin"||t==="dungeon")s+=(m||fo)?1:0;else if(t==="castle")s+=e>.12?.6:0;
+  if(s>bs){bs=s;best=[gx,gy]}}return best}
+function addPlace(t,r,at){const p=at||spot(t,r);if(!p)return null;const o={id:"p"+Math.random().toString(36).slice(2,8),type:t,x:p[0]*CELL,y:p[1]*CELL,name:nameFor(t,r),note:hookFor(t,r),danger:t==="dragon"?ri(r,7,10):ri(r,1,t==="city"||t==="town"?4:9)};M.places.push(o);return o}
+function mkPlaces(){const c=+$("civ").value,a=+$("adv").value,seed=M.seed,spec=[["city",Math.round(c*.35)],["town",c*2],["castle",Math.round(c*.3)],["ruin",a],["dungeon",Math.round(a*.6)],["dragon",Math.round(a*.3)],["treasure",a],["landmark",Math.round(a*.5)]];
+ spec.forEach(([t,n],j)=>{const r=rng(seed*7+j*101);for(let i=0;i<n;i++)addPlace(t,r)})}
+function mkRivers(){M.rivers=[];const r=rng(M.seed+777),n=+$("rivers").value,src=[];for(let y=4;y<GH-4;y++)for(let x=4;x<GW-4;x++)if(M.hh[y*GW+x]>M.mt*.6&&M.hh[y*GW+x]>.15)src.push([x,y]);if(!src.length)return;
+ for(let k=0;k<n*3&&M.rivers.length<n;k++){let [x,y]=pick(r,src);const seen=new Set([x+","+y]),pts=[[x,y]];
+  for(let st=0;st<320;st++){let b=null,bv=9;for(let dy=-1;dy<=1;dy++)for(let dx=-1;dx<=1;dx++){const nx=x+dx,ny=y+dy;if((!dx&&!dy)||nx<1||ny<1||nx>=GW-1||ny>=GH-1||seen.has(nx+","+ny))continue;const v=M.hh[ny*GW+nx]+r()*.025;if(v<bv){bv=v;b=[nx,ny]}}if(!b)break;[x,y]=b;seen.add(x+","+y);pts.push(b);if(M.hh[y*GW+x]<=0)break}
+  const f0=pts[0],reach=Math.max(Math.abs(f0[0]-x),Math.abs(f0[1]-y));if(M.hh[y*GW+x]<=0&&pts.length>12&&pts.length<reach*1.7+8)M.rivers.push(pts.map(p=>[(p[0]+.5)*CELL,(p[1]+.5)*CELL]))}}
+function mkRoads(){M.roads=[];const S=M.places.filter(p=>["city","town","castle"].includes(p.type)),ok=(a,b)=>{for(let i=1;i<14;i++){if(E((a.x+(b.x-a.x)*i/14)/CELL,(a.y+(b.y-a.y)*i/14)/CELL)<.01)return false}return true},has=(a,b)=>M.roads.some(q=>(q[0]===a&&q[1]===b)||(q[0]===b&&q[1]===a));
+ S.forEach((a,i)=>{const prev=S.slice(0,i).sort((u,v)=>Math.hypot(u.x-a.x,u.y-a.y)-Math.hypot(v.x-a.x,v.y-a.y));let n=0;for(const b of prev){if(n>=(a.type==="city"?2:1)||Math.hypot(a.x-b.x,a.y-b.y)>520)break;if(ok(a,b)&&!has(a.id,b.id)){M.roads.push([a.id,b.id]);n++}}})}
+
+/* ---------- dibujo ---------- */
+function PAL(){const s=STY[$("style").value],g=GR[ground],f=c=>{const l=(c[0]+c[1]+c[2])/3;return c.map(v=>clamp((l+(v-l)*s.sat)*s.br,0,255))};return{s,land:f(g.land),sand:f(g.sand),forest:f(g.forest),rock:f(g.rock),sea:f(s.sea),deep:f(s.deep)}}
+const rgb=c=>`rgb(${c[0]|0},${c[1]|0},${c[2]|0})`;
+function land(S,quick){const w=Math.round(W*S),h=Math.round(H*S),cn=document.createElement("canvas");cn.width=w;cn.height=h;const c=cn.getContext("2d"),im=c.createImageData(w,h),d=im.data,P=PAL(),seed=M.seed,mt=M.mt,ft=M.ft,gs=1/(S*CELL),lw=Math.max(.75,.85*S);
+ for(let Y=0;Y<h;Y++)for(let X=0;X<w;X++){const gx=X*gs,gy=Y*gs,wx=X/S,wy=Y/S,e0=E(gx,gy),gr=Math.abs(E(gx+gs,gy)-e0)+Math.abs(E(gx,gy+gs)-e0),e=e0+(vn(wx*.05,wy*.05,seed)-.5)*.06+(vn(wx*.18,wy*.18,seed+3)-.5)*.01;let col;
+  if(Math.abs(e)<Math.max(gr*lw,.0005)){col=[70,62,48]}
+  else if(e>0){const m=E(gx,gy,M.mo);col=(e<.035?P.sand:P.land).slice();const mix=(b,t)=>{col[0]+=(b[0]-col[0])*t;col[1]+=(b[1]-col[1])*t;col[2]+=(b[2]-col[2])*t};
+   if(m>ft&&e>.05&&e<mt*.85)mix(P.forest,.26);if(e>mt)mix(P.rock,.45);const sh=1-clamp(e/(mt<9?mt:.6),0,1.2)*.05;col[0]*=sh;col[1]*=sh;col[2]*=sh}
+  else{const dp=-e,t=clamp(dp/.35,0,1);col=[lerp(P.sea[0],P.deep[0],t),lerp(P.sea[1],P.deep[1],t),lerp(P.sea[2],P.deep[2],t)];
+   if(dp<.13){const ph=dp*26,fr=ph-Math.floor(ph);if(fr<.09*(1-dp/.15)){col[0]+=(236-col[0])*.4;col[1]+=(240-col[1])*.4;col[2]+=(228-col[2])*.4}}}
+  const g=(H1(X,Y,seed)-.5)*13,vg=1-.17*Math.pow(Math.max(Math.abs(X/w-.5),Math.abs(Y/h-.5))*2,3),o=(Y*w+X)*4;d[o]=clamp(col[0]*vg+g,0,255);d[o+1]=clamp(col[1]*vg+g,0,255);d[o+2]=clamp(col[2]*vg+g,0,255);d[o+3]=255}
+ c.putImageData(im,0,0);c.setTransform(S,0,0,S,0,0);c.lineCap="round";c.lineJoin="round";
+ // ríos
+ for(const rv of M.rivers){const n=rv.length;for(let pass=0;pass<2;pass++){for(let i=1;i<n-1;i++){const a=rv[i],b=rv[i+1],m0=[(rv[i-1][0]+a[0])/2,(rv[i-1][1]+a[1])/2],m1=[(a[0]+b[0])/2,(a[1]+b[1])/2],wd=1.2+2.6*i/n;c.beginPath();c.moveTo(m0[0],m0[1]);c.quadraticCurveTo(a[0],a[1],m1[0],m1[1]);c.strokeStyle=pass?rgb(P.sea):"#4f6f7a";c.lineWidth=pass?wd*.55:wd+1.4;c.stroke()}}}
+ // símbolos dibujados a mano
+ const items=[],ink=P.s.ink,near=(x,y)=>M.places.some(p=>Math.abs(p.x-x)<20&&Math.abs(p.y-y)<20);
+ for(let gy=4;gy<GH-4;gy++)for(let gx=4;gx<GW-4;gx++){const i=gy*GW+gx,e=M.hh[i];if(e<.045)continue;const r1=H1(gx,gy,seed+5),x=(gx+.15+.7*H1(gx,gy,seed+6))*CELL,y=(gy+.15+.7*H1(gx,gy,seed+7))*CELL;
+  if(e>M.mt){if(r1<.2&&!near(x,y))items.push({t:"m",x,y,s:11+r1*30,a:H1(gx,gy,9),b:H1(gx,gy,10)})}
+  else if(e>M.mt*.55&&e>.14){if(r1<.2&&!near(x,y))items.push({t:"h",x,y,s:12+r1*20})}
+  else if(M.mo[i]>ft&&e<M.mt*.8&&r1<.5&&!near(x,y))items.push({t:"t",x,y,s:14+r1*6,j:H1(gx,gy,11)})}
+ items.sort((a,b)=>a.y-b.y);c.strokeStyle=ink;c.lineWidth=1.1;
+ for(const it of items){if(it.t==="m")mount(c,it,P);else if(it.t==="h"){c.beginPath();c.arc(it.x,it.y,it.s*.5,Math.PI*1.08,Math.PI*1.92);c.stroke();c.beginPath();c.arc(it.x+it.s*.42,it.y+it.s*.12,it.s*.3,Math.PI*1.1,Math.PI*1.9);c.stroke()}else tree(c,it,P)}
+ return cn}
+function mount(c,it,P){const{x,y,s,a,b}=it,p=[[-1,.5],[-.45+a*.2,-.55],[-.12,-.2],[.25,-1+b*.15],[1,.5]].map(([u,v])=>[x+u*s,y+v*s]);
+ c.beginPath();p.forEach((q,i)=>i?c.lineTo(q[0],q[1]):c.moveTo(q[0],q[1]));c.closePath();c.fillStyle=rgb(P.rock);c.fill();c.stroke();
+ for(let i=0;i<4;i++){const u=.3+i*.14;c.beginPath();c.moveTo(x+u*s,y-.5*s+i*.13*s);c.lineTo(x+(u+.16)*s,y+.42*s);c.stroke()}
+ c.beginPath();[[.25,-1+b*.15],[.05,-.5],[.17,-.58],[.27,-.45],[.37,-.57],[.47,-.45]].forEach(([u,v],i)=>i?c.lineTo(x+u*s,y+v*s):c.moveTo(x+u*s,y+v*s));c.closePath();c.fillStyle=ground==="ash"?"#c4543a":"#fbf7ea";c.fill();c.stroke()}
+function tree(c,it,P){const dk=[P.forest[0]*.8,P.forest[1]*.85,P.forest[2]*.8];c.fillStyle=rgb(dk);for(const[dx,dy,k]of[[-.4,.15,.8],[.4,0,.9],[0,-.35,1]]){const x=it.x+dx*it.s,y=it.y+dy*it.s,s=it.s*k;
+  if(ground==="jungle"||it.j<.3){c.beginPath();c.moveTo(x,y+s*.45);c.lineTo(x,y+s*.1);c.stroke();c.beginPath();c.arc(x,y-s*.12,s*.34,0,7);c.fill();c.stroke()}
+  else{c.beginPath();c.moveTo(x,y+s*.45);c.lineTo(x,y+s*.2);c.stroke();for(let t=0;t<2;t++){const yy=y-t*s*.32;c.beginPath();c.moveTo(x,yy-s*.5);c.lineTo(x-s*.34,yy+s*.15);c.lineTo(x+s*.34,yy+s*.15);c.closePath();c.fill();c.stroke()}}}}
+function icon(c,t,x,y,s,ink){c.save();c.translate(x,y);c.strokeStyle=ink;c.lineWidth=1.4;c.lineJoin="round";
+ const R=(a,b,w,h,f)=>{c.beginPath();c.rect(a*s,b*s,w*s,h*s);c.fillStyle=f;c.fill();c.stroke()},T=(pts,f)=>{c.beginPath();pts.forEach(([a,b],i)=>i?c.lineTo(a*s,b*s):c.moveTo(a*s,b*s));c.closePath();c.fillStyle=f;c.fill();c.stroke()},wl="#f3e6c4",rf="#b5654a";
+ if(t==="town"){R(-.3,-.1,.6,.4,wl);T([[-.4,-.1],[0,-.5],[.4,-.1]],rf);R(-.07,.08,.14,.22,"#7a5a3c")}
+ else if(t==="city"){R(-.6,-.05,.38,.35,wl);T([[-.66,-.05],[-.41,-.36],[-.16,-.05]],rf);R(.22,0,.36,.3,wl);T([[.17,0],[.4,-.3],[.63,0]],rf);R(-.18,-.4,.4,.7,wl);T([[-.24,-.4],[.02,-.78],[.28,-.4]],rf);R(-.06,.1,.16,.2,"#7a5a3c")}
+ else if(t==="castle"){R(-.5,-.3,.3,.6,wl);R(.2,-.3,.3,.6,wl);R(-.2,-.1,.4,.4,wl);for(const u of[-.5,-.35,.2,.35])R(u,-.42,.15,.12,wl);R(-.07,.08,.14,.22,"#5a4630");c.beginPath();c.moveTo(0,-.1);c.lineTo(0,-.6);c.stroke();T([[0,-.6],[.25,-.5],[0,-.4]],"#a4513c")}
+ else if(t==="ruin"){c.beginPath();c.moveTo(-.45,.3);c.lineTo(-.45,-.3);c.lineTo(-.25,-.3);c.lineTo(-.25,-.05);c.lineTo(-.1,-.2);c.lineTo(.05,.0);c.lineTo(.2,-.05);c.lineTo(.2,-.4);c.lineTo(.42,-.4);c.lineTo(.42,.3);c.closePath();c.fillStyle="#cfc4a6";c.fill();c.stroke()}
+ else if(t==="dungeon"){T([[-.55,.32],[-.4,-.15],[-.1,-.4],[.2,-.38],[.45,-.1],[.55,.32]],"#a59f8c");R(-.16,-.02,.32,.34,"#2b2823")}
+ else if(t==="dragon"){T([[-.55,-.2],[-.15,-.05],[0,-.5],[.15,-.05],[.55,-.2],[.35,.2],[.1,.1],[.1,.4],[-.1,.4],[-.1,.1],[-.35,.2]],"#b0533f");c.fillStyle="#fff";c.beginPath();c.arc(-.04*s,-.02*s,s*.04,0,7);c.arc(.04*s,-.02*s,s*.04,0,7);c.fill()}
+ else if(t==="treasure"){c.strokeStyle="#9c2f22";c.lineWidth=3;c.beginPath();c.moveTo(-.3*s,-.3*s);c.lineTo(.3*s,.3*s);c.moveTo(.3*s,-.3*s);c.lineTo(-.3*s,.3*s);c.stroke();c.fillStyle="#e1b24e";c.beginPath();c.arc(0,0,s*.1,0,7);c.fill()}
+ else{for(const[u,v,w,h]of[[-.4,-.1,.22,.42],[-.1,-.35,.24,.67],[.22,-.05,.2,.37]])R(u,v,w,h,"#b9b29b")}
+ c.restore()}
+function overlay(c){const P=PAL(),ink=P.s.ink;
+ if($("showRoads").checked)for(const[a,b]of M.roads){const A=M.places.find(p=>p.id===a),B=M.places.find(p=>p.id===b);if(!A||!B)continue;const mx=(A.x+B.x)/2+(H1(A.x|0,B.y|0,M.seed)-.5)*60,my=(A.y+B.y)/2+(H1(B.x|0,A.y|0,M.seed)-.5)*60;
+  for(const[col,wd,dash]of[["#f1e2b6",5,[]],["#8a6b3f",1.6,[5,5]]]){c.beginPath();c.moveTo(A.x,A.y);c.quadraticCurveTo(mx,my,B.x,B.y);c.strokeStyle=col;c.lineWidth=wd;c.setLineDash(dash);c.stroke()}c.setLineDash([])}
+ const ps=[...M.places].sort((a,b)=>a.y-b.y),sz={city:30,town:22,castle:28};
+ for(const p of ps)icon(c,p.type,p.x,p.y,sz[p.type]||22,ink);
+ if($("showNames").checked){c.textAlign="center";c.textBaseline="alphabetic";for(const p of ps){if(!p.name)continue;const big=p.type==="city",s=sz[p.type]||22;c.font=`italic ${big?19:14}px 'IM Fell English',Georgia,serif`;c.lineWidth=4;c.strokeStyle=P.s.paper;c.lineJoin="round";c.strokeText(p.name,p.x,p.y+s*.62+13);c.fillStyle=ink;c.fillText(p.name,p.x,p.y+s*.62+13)}}}
+function frame(c){const P=PAL().s;c.fillStyle=P.paper;c.fillRect(0,0,W,38);c.fillRect(0,H-38,W,38);c.fillRect(0,0,38,H);c.fillRect(W-38,0,38,H);c.strokeStyle=P.ink;c.lineWidth=2.5;c.strokeRect(14,14,W-28,H-28);c.lineWidth=1;c.strokeRect(22,22,W-44,H-44);c.strokeRect(38,38,W-76,H-76);
+ const t=$("mapName").value||"Mapa";c.font="italic 30px 'IM Fell English',Georgia,serif";c.textAlign="center";c.textBaseline="middle";const tw=c.measureText(t).width+70;c.fillStyle=P.paper;c.strokeStyle=P.ink;c.lineWidth=2;c.beginPath();c.roundRect(W/2-tw/2,26,tw,52,10);c.fill();c.stroke();c.fillStyle=P.ink;c.fillText(t,W/2,53);
+ if($("showCompass").checked){c.save();c.translate(W-105,H-110);c.strokeStyle=P.ink;c.fillStyle=P.ink;c.lineWidth=1.3;for(const[r,w]of[[44,.14],[30,.3]]){for(let k=0;k<4;k++){c.rotate(Math.PI/2*(k?1:0)+(r===30&&!k?Math.PI/4:0));c.beginPath();c.moveTo(0,-r);c.lineTo(r*w,-r*w);c.lineTo(0,0);c.lineTo(-r*w,-r*w);c.closePath();c.fillStyle=k%2?"#f4ead0":P.ink;c.fill();c.stroke()}}c.restore();c.fillStyle=P.ink;c.font="bold 16px 'IM Fell English',Georgia,serif";c.fillText("N",W-105,H-170)}}
+function render(quick){landCv=land(quick?.38:1);draw()}
+function draw(){const dpr=devicePixelRatio||1,r=cv.getBoundingClientRect();if(cv.width!==Math.round(r.width*dpr)||cv.height!==Math.round(r.height*dpr)){cv.width=Math.round(r.width*dpr);cv.height=Math.round(r.height*dpr)}
+ const c=cv.getContext("2d");c.setTransform(dpr,0,0,dpr,0,0);c.fillStyle="#bfb185";c.fillRect(0,0,r.width,r.height);c.translate(view.x,view.y);c.scale(view.k,view.k);
+ if(landCv)c.drawImage(landCv,0,0,W,H);overlay(c);frame(c);const p=M.places.find(p=>p.id===sel);if(p){c.strokeStyle="#c1782b";c.lineWidth=3;c.setLineDash([6,4]);c.beginPath();c.arc(p.x,p.y,24,0,7);c.stroke();c.setLineDash([])}}
+function fit(){const r=cv.getBoundingClientRect(),k=Math.min(r.width/W,r.height/H)*.97;view={k,x:(r.width-W*k)/2,y:(r.height-H*k)/2};view.k0=k}
+
+/* ---------- herramientas ---------- */
+const TOOLS=[["move","✋","Explorar","Arrastra el mapa para moverte. Toca un lugar para ver su ficha, o arrástralo para cambiarlo de sitio."],["mount","⛰","Montañas","Pinta montañas arrastrando por el mapa. Mantén Shift para quitarlas."],["forest","🌲","Bosques","Pinta bosques arrastrando. Mantén Shift para quitarlos."],["land","🏝","Tierra","Pinta tierra firme sobre el mar. Mantén Shift para volver a convertirla en mar."],["water","🌊","Mar y lagos","Pinta agua: lagos, bahías, estrechos. Mantén Shift para devolver tierra."],["place","📍","Poner lugar","Elige un tipo de lugar aquí arriba y haz clic en el mapa para colocarlo."],["erase","🧽","Borrar lugar","Haz clic sobre un lugar para eliminarlo."]];
+function buildUI(){$("presets").innerHTML=Object.entries(BIO).map(([k,b])=>`<button data-b="${k}">${b.ic} ${b.n}</button>`).join("")+`<button data-b="rnd">✨ Sorpréndeme</button>`;
+ $("bar").innerHTML=TOOLS.map(t=>`<button data-t="${t[0]}">${t[1]} ${t[2]}</button>`).join("")+`<span class="sp"></span><button id="zo">−</button><button id="zi">+</button><button id="ctr">⌖</button>`;
+ $("types").innerHTML=Object.keys(TL).map(k=>`<button data-p="${k}">${TE[k]} ${TL[k]}</button>`).join("");setTool("move")}
+function setTool(t){tool=t;document.querySelectorAll("[data-t]").forEach(b=>b.classList.toggle("on",b.dataset.t===t));$("hint").textContent=TOOLS.find(x=>x[0]===t)[3];$("types").style.display=t==="place"?"flex":"none";$("brushW").style.display=["mount","forest","land","water"].includes(t)?"flex":"none";document.querySelectorAll("[data-p]").forEach(b=>b.classList.toggle("on",b.dataset.p===ptype));cv.style.cursor=t==="move"?"grab":"crosshair"}
+function paint(m,inv){const R=+$("brush").value,gx=m.x/CELL,gy=m.y/CELL;
+ for(let y=Math.max(3,Math.floor(gy-R));y<=Math.min(GH-4,Math.ceil(gy+R));y++)for(let x=Math.max(3,Math.floor(gx-R));x<=Math.min(GW-4,Math.ceil(gx+R));x++){const d=Math.hypot(x+.5-gx,y+.5-gy);if(d>R)continue;const f=Math.pow(1-d/R,.7),i=y*GW+x,hh=M.hh;
+  if(tool==="mount")hh[i]=clamp(hh[i]+(inv?-1:1)*.07*f,-.6,M.mt+.35);
+  else if(tool==="forest")M.mo[i]=clamp(M.mo[i]+(inv?-1:1)*.12*f,0,1);
+  else{const up=(tool==="land")!==inv;hh[i]=up?Math.max(hh[i],Math.min(hh[i]+.08*f,.12)):hh[i]-.08*f}}}
+const pt=e=>{const r=cv.getBoundingClientRect();return{x:(e.clientX-r.left-view.x)/view.k,y:(e.clientY-r.top-view.y)/view.k}};
+const hit=m=>M.places.filter(p=>Math.hypot(p.x-m.x,p.y-m.y)<22/Math.max(.7,Math.min(1,view.k/(view.k0||1)))).sort((a,b)=>Math.hypot(a.x-m.x,a.y-m.y)-Math.hypot(b.x-m.x,b.y-m.y))[0];
+let mode=null,drag=null,last=null,moved=false,pend=0,quickF=false;
+function req(q){quickF=q;if(pend)return;pend=requestAnimationFrame(()=>{pend=0;render(quickF)})}
+cv.addEventListener("pointerdown",e=>{cv.setPointerCapture(e.pointerId);last={x:e.clientX,y:e.clientY};moved=false;const m=pt(e);
+ if(e.button!==0||(tool==="move"&&!hit(m))){mode="pan";return}
+ if(tool==="move"){drag=hit(m);sel=drag.id;snap();mode="drag";side();draw()}
+ else if(tool==="place"){if(E(m.x/CELL,m.y/CELL)<.02){toast("Ahí hay agua: elige un punto de tierra");return}snap();const o=addPlace(ptype,Math.random,[m.x/CELL,m.y/CELL]);sel=o.id;mkRoads();render();side()}
+ else if(tool==="erase"){const p=hit(m);if(p){snap();M.places=M.places.filter(q=>q!==p);if(sel===p.id)sel=null;mkRoads();render();side()}}
+ else{snap();mode="paint";paint(m,e.shiftKey);req(true)}});
+cv.addEventListener("pointermove",e=>{if(!mode)return;const dx=e.clientX-last.x,dy=e.clientY-last.y;if(Math.abs(dx)+Math.abs(dy)>2)moved=true;const m=pt(e);
+ if(mode==="pan"){view.x+=dx;view.y+=dy;last={x:e.clientX,y:e.clientY};draw()}else if(mode==="drag"){drag.x=clamp(m.x,50,W-50);drag.y=clamp(m.y,50,H-50);moved=true;draw()}else if(mode==="paint"){paint(m,e.shiftKey);req(true)}});
+cv.addEventListener("pointerup",e=>{if(mode==="pan"&&!moved&&tool==="move"){sel=null;side();draw()}
+ if(mode==="paint"){mkRivers();mkRoads();render();side()}if(mode==="drag"){mkRoads();render();side()}mode=null});
+cv.addEventListener("wheel",e=>{e.preventDefault();const r=cv.getBoundingClientRect(),sx=e.clientX-r.left,sy=e.clientY-r.top,nk=clamp(view.k*(e.deltaY<0?1.12:.89),view.k0*.7,view.k0*5);view.x=sx-(sx-view.x)*nk/view.k;view.y=sy-(sy-view.y)*nk/view.k;view.k=nk;draw()},{passive:false});
+function zoomBy(f){const r=cv.getBoundingClientRect(),sx=r.width/2,sy=r.height/2,nk=clamp(view.k*f,view.k0*.7,view.k0*5);view.x=sx-(sx-view.x)*nk/view.k;view.y=sy-(sy-view.y)*nk/view.k;view.k=nk;draw()}
+
+/* ---------- panel derecho ---------- */
+function side(){const p=M.places.find(p=>p.id===sel);
+ $("card").innerHTML=p?`<div class="card"><small>${TE[p.type]} ${TL[p.type]}</small><input type="text" id="pn" value="${esc(p.name)}" placeholder="Nombre" style="margin:6px 0"><label class="hint2">Peligro: <b id="dv">${p.danger}</b>/10</label><input type="range" id="pd" min="1" max="10" value="${p.danger}" style="width:100%;accent-color:#a4513c"><label class="hint2">Notas, rumores y misiones</label><textarea id="pt" rows="6">${esc(p.note)}</textarea><div class="row"><button id="pr">🎲 Otra idea</button><button id="px">🗑 Eliminar</button></div></div>`:`<div class="card"><b class="t">Cuaderno del cartógrafo</b><p class="hint2">Toca cualquier lugar del mapa para ver y editar su ficha: nombre, peligro y notas para tu partida.</p><p class="hint2">Para añadir más, usa <b>📍 Poner lugar</b> en la barra de arriba.</p></div>`;
+ if(p){$("pn").oninput=e=>{p.name=e.target.value;draw();list()};$("pt").oninput=e=>p.note=e.target.value;$("pd").oninput=e=>{p.danger=+e.target.value;$("dv").textContent=p.danger};
+  $("pr").onclick=()=>{const r=Math.random;p.note=hookFor(p.type,r);p.name=nameFor(p.type,r);side();draw()};$("px").onclick=()=>{snap();M.places=M.places.filter(q=>q!==p);sel=null;mkRoads();render();side()}}
+ list()}
+const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+function list(){$("list").innerHTML=M.places.map(p=>`<button class="pl ${p.id===sel?"on":""}" data-id="${p.id}"><span>${TE[p.type]}</span><span>${esc(p.name||TL[p.type])}<small>${TL[p.type]}</small></span></button>`).join("")||'<p class="hint2">Aún no hay lugares.</p>'}
+$("list").onclick=e=>{const b=e.target.closest("[data-id]");if(b){sel=b.dataset.id;side();draw()}};
+
+/* ---------- historial, guardar, cargar ---------- */
+function snap(){hist.push({hh:M.hh&&M.hh.slice(),mo:M.mo&&M.mo.slice(),pl:JSON.stringify(M.places),mt:M.mt,ft:M.ft,seed:M.seed,W,H});if(hist.length>20)hist.shift()}
+function undo(){const h=hist.pop();if(!h||!h.hh){toast("Nada que deshacer");return}W=h.W;H=h.H;GW=W/CELL;GH=H/CELL;Object.assign(M,{hh:h.hh,mo:h.mo,places:JSON.parse(h.pl),mt:h.mt,ft:h.ft,seed:h.seed});sel=null;mkRivers();mkRoads();render();side();toast("Deshecho")}
+const IDS=["land","mount","forest","rivers","civ","adv","style","names","seed","fmt","res"],CK=["showNames","showRoads","showCompass"];
+function png(){const s=+$("res").value/W,cn=document.createElement("canvas");cn.width=Math.round(W*s);cn.height=Math.round(H*s);const c=cn.getContext("2d");c.drawImage(land(s),0,0);c.scale(s,s);overlay(c);frame(c);const a=document.createElement("a");a.download=($("mapName").value||"mapa").normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^a-z0-9]+/gi,"-").toLowerCase()+".png";a.href=cn.toDataURL("image/png");a.click();toast("PNG descargado")}
+function save(){const d={v:3,name:$("mapName").value,shape,ground,W,H,seed:M.seed,mt:M.mt,ft:M.ft,hh:Array.from(M.hh,v=>Math.round(v*1000)),mo:Array.from(M.mo,v=>Math.round(v*1000)),places:M.places,s:Object.fromEntries([...IDS.map(i=>[i,$(i).value]),...CK.map(i=>[i,$(i).checked])])},a=document.createElement("a");a.href=URL.createObjectURL(new Blob([JSON.stringify(d)],{type:"application/json"}));a.download="atlas-"+Date.now()+".json";a.click();toast("Mapa guardado")}
+function open(f){const r=new FileReader();r.onload=()=>{try{const d=JSON.parse(r.result);if(d.v!==3)throw 0;shape=d.shape;ground=d.ground;for(const[k,v]of Object.entries(d.s)){const el=$(k);if(el.type==="checkbox")el.checked=v;else el.value=v}$("mapName").value=d.name;dims();M={seed:d.seed,mt:d.mt,ft:d.ft,hh:Float32Array.from(d.hh,v=>v/1000),mo:Float32Array.from(d.mo,v=>v/1000),places:d.places,rivers:[],roads:[]};sel=null;outs();mkRivers();mkRoads();fit();render();side();toast("Mapa abierto")}catch(e){alert("Ese archivo no es un mapa del Atlas.")}};r.readAsText(f)}
+
+/* ---------- conexión de controles ---------- */
+const outs=()=>document.querySelectorAll(".sl").forEach(s=>s.querySelector("output").textContent=s.querySelector("input").value+(["land","mount","forest"].includes(s.querySelector("input").id)?"%":""));
+let deb;document.querySelectorAll(".sl input").forEach(i=>i.addEventListener("input",()=>{outs();clearTimeout(deb);deb=setTimeout(()=>gen(false),140)}));
+function applyBio(k){if(k==="rnd")k=pick(Math.random,Object.keys(BIO));const b=BIO[k];Object.entries(b.v).forEach(([i,v])=>$(i).value=v);shape=b.s;ground=b.g;outs();document.querySelectorAll("[data-b]").forEach(x=>x.classList.toggle("on",x.dataset.b===k));gen(true)}
+$("presets").onclick=e=>{const b=e.target.closest("[data-b]");if(b)applyBio(b.dataset.b)};
+$("bar").onclick=e=>{const b=e.target.closest("[data-t]");if(b)setTool(b.dataset.t);if(e.target.id==="zi")zoomBy(1.25);if(e.target.id==="zo")zoomBy(.8);if(e.target.id==="ctr"){fit();draw()}};
+$("types").onclick=e=>{const b=e.target.closest("[data-p]");if(b){ptype=b.dataset.p;setTool("place")}};
+$("newWorld").onclick=()=>gen(true);$("undo").onclick=undo;$("png").onclick=png;$("json").onclick=save;$("load").onclick=()=>$("file").click();$("file").onchange=e=>{if(e.target.files[0])open(e.target.files[0]);e.target.value=""};
+["style","showNames","showRoads","showCompass","mapName"].forEach(i=>$(i).addEventListener("input",()=>draw()));$("style").addEventListener("change",()=>render());
+$("names").onchange=()=>{snap();const r=rng(M.seed+5);M.places.forEach(p=>p.name=nameFor(p.type,r));side();draw()};
+$("seed").onchange=()=>gen(false);$("fmt").onchange=()=>{gen(false);fit();draw()};
+addEventListener("keydown",e=>{if(/INPUT|TEXTAREA|SELECT/.test(e.target.tagName))return;if((e.ctrlKey||e.metaKey)&&e.key==="z"){e.preventDefault();undo()}if((e.key==="Delete"||e.key==="Backspace")&&sel){snap();M.places=M.places.filter(p=>p.id!==sel);sel=null;mkRoads();render();side()}});
+addEventListener("resize",()=>{fit();draw()});
+buildUI();outs();document.querySelector('[data-b="templado"]').classList.add("on");fit();gen(true);hist.length=0;fit();draw();
+})();
+</script></body></html>
